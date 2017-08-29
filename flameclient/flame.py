@@ -162,7 +162,14 @@ class TemplateGenerator(object):
     def order_ports(self):
         for i, port in self.ports.values():
             for fixed_ip in port['fixed_ips']:
-                ip_subnet = self.subnets[fixed_ip['subnet_id']][1]
+                if 'subnet_id' in fixed_ip:
+                    subnet_id = fixed_ip['subnet_id']
+                else:
+                    continue
+                if subnet_id in self.subnets:
+                    ip_subnet = self.subnets[subnet_id][1]
+                else:
+                    continue
                 pools = ip_subnet.get('allocation_pools')
                 if pools:
                     pools_starts = [pool['start'] for pool in pools]
@@ -305,10 +312,16 @@ class TemplateGenerator(object):
         return resources
 
     def get_network_resource_name(self, network_id):
-        return "network_%d" % self.networks[network_id][0]
+        if network_id in self.networks:
+            return "network_%d" % self.networks[network_id][0]
+        else:
+            return None
 
     def get_subnet_resource_name(self, subnet_id):
-        return "subnet_%d" % self.subnets[subnet_id][0]
+        if subnet_id in self.subnets:
+            return "subnet_%d" % self.subnets[subnet_id][0]
+        else:
+            return None
 
     def get_server_resource_name(self, device_id):
         return "server_%d" % self.servers[device_id][0]
